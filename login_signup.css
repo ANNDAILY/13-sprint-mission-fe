@@ -1,0 +1,143 @@
+* {
+  box-sizing: border-box;
+}
+body {
+  font-family: "Pretendard Std Variable";
+  color: #222;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+}
+
+form {
+  margin: 16px auto;
+  width: 640px;
+  display: flex;
+  flex-direction: column;
+  min-height: 618px;
+}
+
+.form_logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.form_logo a {
+  display: block;
+}
+
+label {
+  color: #2c2c2c;
+  display: block;
+  font-weight: 700;
+  margin: 16px 0 8px;
+}
+
+input {
+  background: #f3f4f6;
+  border: none;
+  display: block;
+  font-size: 16px;
+  line-height: 24px;
+  padding: 16px 24px;
+  width: 100%;
+  border-radius: 12px;
+  margin: 0;
+}
+
+.input-pw-inner {
+  position: relative;
+  width: 100%;
+  margin: 8px 0;
+  display: flex;
+}
+
+.input-pw-inner input {
+  width: 100%;
+  padding-right: 50px;
+  background: #f3f4f6;
+  border-radius: 12px;
+  border: none;
+  display: block;
+}
+
+.eye-button {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: auto;
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.eye-icon {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+button {
+  background: #9ca3af;
+  border: none;
+  color: #ffffff;
+  display: block;
+  font-size: 18px;
+  font-weight: 700;
+  margin: 24px 0;
+  padding: 16px;
+  width: 100%;
+  border-radius: 40px;
+}
+
+.e_login {
+  background: #e6f2ff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 16px;
+  margin: 8px 0;
+  padding: 16px 23px;
+  width: 100%;
+  height: 74px;
+  font-weight: 700;
+  border-radius: 8px;
+
+  .e-login-inner {
+    display: flex;
+    width: 100px;
+    height: 42px;
+    justify-content: space-between;
+  }
+}
+.page_go {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  font-size: 14px;
+  color: #1f2937;
+  margin-top: auto;
+  padding-top: 40px;
+  gap: 5px;
+}
+.signup_go a {
+  color: #3182f6;
+}
+
+input::placeholder {
+  color: #9ca3af;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 26px;
+}
