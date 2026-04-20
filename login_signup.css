@@ -38,7 +38,10 @@ label {
   font-weight: 700;
   margin: 16px 0 8px;
 }
-
+input:focus {
+  outline: none;
+  border: 1.5px solid #3692ff;
+}
 input {
   background: #f3f4f6;
   border: none;
