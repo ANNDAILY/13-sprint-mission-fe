@@ -3,6 +3,18 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  --brand-blue: #3692ff; /* 메인 포인트 블루 */
+  --brand-hover: #1967d6; /* 버튼 호버용 딥 블루 */
+
+  --gray-900: #111827; /* 메인 타이틀, 푸터 배경 */
+  --gray-600: #4b5563; /* 서브 메뉴, 메타 텍스트 */
+  --gray-500: #6b7280; /* 일반 본문 Gray */
+  --gray-400: #9ca3af; /* 플레이스홀더, 날짜 */
+  --gray-300: #d1d5db; /* 비활성화 상태 */
+  --gray-200: #e5e7eb; /* 디바이더 선, 카드 테두리 */
+  --gray-100: #f3f4f6; /* 인풋창 내부 배경, 이미지 더미 배경 */
+  --gray-50: #f9fafb; /* 전체 웹사이트 바디 메인 배경 */
 }
 
 @theme inline {
@@ -10,6 +22,18 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  --color-brand-blue: var(--brand-blue);
+  --color-brand-hover: var(--brand-hover);
+
+  --color-panda-50: var(--gray-50);
+  --color-panda-100: var(--gray-100);
+  --color-panda-200: var(--gray-200);
+  --color-panda-300: var(--gray-300);
+  --color-panda-400: var(--gray-400);
+  --color-panda-500: var(--gray-500);
+  --color-panda-600: var(--gray-600);
+  --color-panda-900: var(--gray-900);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -20,7 +44,7 @@
 }
 
 body {
-  background: var(--background);
+  background-color: var(--gray-50);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
