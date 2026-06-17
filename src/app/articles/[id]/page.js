@@ -8,6 +8,7 @@ import Image from "next/image";
 import icProfile from "@/app/assets/images/icons/ic_profile.svg";
 import icHeart from "@/app/assets/images/icons/ic_heart.svg";
 import icBack from "@/app/assets/images/icons/ic_back.svg";
+import icBlank from "@/app/assets/images/icons/ic_blank.svg";
 
 const formatDate = (dateString) => {
   if (!dateString) return "";
@@ -49,7 +50,7 @@ export default function ArticleDetailPage() {
 
   const isCommentValid = newComment.trim().length > 0;
 
-  // 1. GET 데이터 가져오기
+  // GET 데이터 가져오기
   useEffect(() => {
     const fetchArticleDetail = async () => {
       try {
@@ -71,23 +72,8 @@ export default function ArticleDetailPage() {
           nickname: "총명한판다",
         });
 
-        const now = new Date();
-        const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
-        const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
-
         setComments([
-          {
-            id: 1,
-            nickname: "코드잇학생",
-            content: "저도 완전 공감합니다! UI가 진짜 예뻐요.",
-            createdAt: twoHoursAgo.toISOString(),
-          },
-          {
-            id: 2,
-            nickname: "판다러버",
-            content: "다음에 중고마켓에서 좋은 물건 올려주세요~",
-            createdAt: threeDaysAgo.toISOString(),
-          },
+          // { id: 1, nickname: "코드잇학생", content: "저도 완전 공감합니다! UI가 진짜 예뻐요.", createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() }
         ]);
       } finally {
         setIsLoading(false);
@@ -97,7 +83,7 @@ export default function ArticleDetailPage() {
     if (id) fetchArticleDetail();
   }, [id]);
 
-  // 2. 본문 DELETE
+  // 본문 DELETE
   const handleDeleteArticle = async () => {
     if (!confirm("정말로 이 게시글을 삭제하시겠습니까?")) return;
     setIsArticleMenuOpen(false);
@@ -117,14 +103,14 @@ export default function ArticleDetailPage() {
     }
   };
 
-  // 3. 댓글 삭제
+  // 댓글 삭제
   const handleDeleteComment = (commentId) => {
     if (!confirm("정말로 이 댓글을 삭제하시겠습니까?")) return;
     setComments(comments.filter((c) => commentId !== c.id));
     setActiveCommentMenuId(null);
   };
 
-  // 4. 댓글 수정
+  // 댓글 수정
   const handleEditComment = (commentId) => {
     alert(`댓글 수정창을 활성화합니다. (댓글 ID: ${commentId})`);
     setActiveCommentMenuId(null);
@@ -148,7 +134,7 @@ export default function ArticleDetailPage() {
 
   return (
     <div className="w-full pb-32 pt-6">
-      {/*  본문 상세글 헤더 영역  */}
+      {/*  본문 상세글 헤더  */}
       <div className="flex flex-col gap-4 mb-6">
         <h1 className="text-2xl font-bold text-panda-900 leading-snug">
           {article.title}
@@ -199,14 +185,13 @@ export default function ArticleDetailPage() {
 
       <div className="w-full h-px bg-panda-200 mb-10"></div>
 
-      {/*  본문 내용 및 댓글 영역  */}
+      {/*  본문 내용 및 댓글 */}
       <div className="flex flex-col gap-8 mb-16">
-        {/* 본문 내용  */}
         <div className="min-h-[250px] text-panda-900 text-lg leading-relaxed whitespace-pre-wrap">
           {article.content}
         </div>
 
-        {/* 댓글 */}
+        {/* 댓글  */}
         <section className="flex flex-col">
           <h3 className="font-bold text-lg text-panda-900 mb-3">댓글달기</h3>
 
@@ -289,8 +274,19 @@ export default function ArticleDetailPage() {
                 </div>
               ))
             ) : (
-              <div className="text-center text-panda-400 text-sm py-10 bg-white">
-                아직 작성된 댓글이 없습니다.
+              <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
+                <Image
+                  src={icBlank}
+                  alt="댓글 없음 아이콘"
+                  width={140}
+                  height={140}
+                  className="opacity-90"
+                />
+                <p className="text-panda-400 text-base font-medium leading-relaxed">
+                  아직 댓글이 없어요,
+                  <br />
+                  지금 댓글을 달보세요
+                </p>
               </div>
             )}
           </div>
