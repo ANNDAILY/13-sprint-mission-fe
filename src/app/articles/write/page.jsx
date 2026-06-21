@@ -16,34 +16,30 @@ export default function ArticleWritePage() {
     if (!isFormValid) return;
 
     try {
-      // 실제 API 주소(임시작업중)
-      const response = await fetch("https://your-api-url.com/articles", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/articles`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            title,
+            content,
+          }),
         },
-        body: JSON.stringify({
-          title,
-          content,
-        }),
-      });
+      );
 
       if (response.ok) {
         const newArticle = await response.json();
 
         router.push(`/articles/${newArticle.id}`);
       } else {
-        alert(
-          "성공적으로 등록되었습니다! (API 미연결 상태라 임시 상세 페이지로 이동합니다.)",
-        );
-        router.push(`/articles/999`);
+        alert("게시글 등록에 실패했습니다.");
       }
     } catch (error) {
       console.error("게시글 등록 실패:", error);
       alert("네트워크 에러가 발생했습니다.");
-
-      // 테스트 임시 이동
-      router.push(`/articles/999`);
     }
   };
 

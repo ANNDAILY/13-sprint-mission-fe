@@ -27,6 +27,7 @@ export default function ArticlesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("latest");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [error, setError] = useState(null);
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
@@ -34,85 +35,44 @@ export default function ArticlesPage() {
   // GET 데이터 가져오기
   useEffect(() => {
     const fetchArticles = async () => {
-      const dummyData = [
-        {
-          id: 1,
-          title: "테스트 게시글 1입니다.",
-          createdAt: "2024-06-16T10:00:00Z",
-          likeCount: 15,
-          nickname: "총명한판다",
-        },
-        {
-          id: 2,
-          title: "판다마켓 너무 좋아요",
-          createdAt: "2024-06-15T10:00:00Z",
-          likeCount: 102,
-          nickname: "코드잇학생",
-        },
-        {
-          id: 3,
-          title: "넥스트js 재밌네요!",
-          createdAt: "2024-06-14T10:00:00Z",
-          likeCount: 5,
-          nickname: "프론트엔드",
-        },
-        {
-          id: 4,
-          title: "검색 기능 테스트용 글",
-          createdAt: "2024-06-13T10:00:00Z",
-          likeCount: 45,
-          nickname: "개발자지망생",
-        },
-        {
-          id: 5,
-          title: "다섯 번째 게시글! 여기까지가 1페이지 본문에 마운트됩니다.",
-          createdAt: "2024-06-12T10:00:00Z",
-          likeCount: 22,
-          nickname: "판다러버",
-        },
-        {
-          id: 6,
-          title:
-            "여섯 번째 글입니다. 하단 페이지네이션 바를 통해 2페이지로 넘어옵니다.",
-          createdAt: "2024-06-11T10:00:00Z",
-          likeCount: 7,
-          nickname: "NextV4초보",
-        },
-        {
-          id: 7,
-          title: "마지막 일곱 번째 게시글까지 안전하게 연동 및 출력 확인!",
-          createdAt: "2024-06-10T10:00:00Z",
-          likeCount: 88,
-          nickname: "과제마스터",
-        },
-      ];
-
       try {
-        const response = await fetch("https://your-api-url.com/articles");
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/articles`,
+        );
         if (response.ok) {
-          const data = await response.json();
-          setArticles(data);
-        } else {
-          setArticles(dummyData);
+          const contentType = response.headers.get("content-type");
+          if (contentType && contentType.includes("application/json")) {
+            const data = await response.json();
+            console.log("API 응답 데이터:", data); // 서버 응답 구조 확인용
+
+            if (Array.isArray(data)) {
+              setArticles(data);
+            } else {
+              setArticles(data?.list || data?.articles || data?.data || []);
+            }
+          } else {
+            throw new Error(
+              "서버가 JSON 데이터가 아닌 HTML 페이지를 반환했습니다. API 주소나 서버 상태를 확인해주세요.",
+            );
+          }
         }
       } catch (error) {
         console.error("데이터 조회 실패:", error);
-        setArticles(dummyData);
+        setError(error.message);
       }
     };
 
     fetchArticles();
   }, []);
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, sortBy]);
+  // articles가 배열이 아닐 경우 대비
+  const safeArticles = Array.isArray(articles) ? articles : [];
 
-  const bestArticles = [...articles]
+  const bestArticles = [...safeArticles]
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     .slice(0, 3);
 
-  const filteredAndSortedArticles = articles
+  const filteredAndSortedArticles = safeArticles
     .filter((article) =>
       article.title.toLowerCase().includes(searchTerm.toLowerCase()),
     )
@@ -161,7 +121,7 @@ export default function ArticlesPage() {
                     alt="제품 이미지"
                     width={72}
                     height={72}
-                    className="rounded-xl object-cover shrink-0 bg-panda-100"
+                    className="rounded-xl object-cover shrink-0 bg-panda-100 w-auto h-auto"
                   />
                   <span className="text-xs text-panda-400">
                     {formatDate(article.createdAt)}
@@ -206,7 +166,10 @@ export default function ArticlesPage() {
             type="text"
             placeholder="검색할 게시글을 입력해주세요"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full bg-panda-100 text-panda-900 pl-11 pr-4 py-3 rounded-xl focus:outline-none focus:bg-white focus:border focus:border-brand-blue text-sm placeholder-panda-400"
           />
         </div>
@@ -229,6 +192,7 @@ export default function ArticlesPage() {
               <button
                 onClick={() => {
                   setSortBy("latest");
+                  setCurrentPage(1);
                   setIsDropdownOpen(false);
                 }}
                 className="w-full px-4 py-2.5 text-left text-sm text-panda-900 hover:bg-panda-100"
@@ -238,6 +202,7 @@ export default function ArticlesPage() {
               <button
                 onClick={() => {
                   setSortBy("likes");
+                  setCurrentPage(1);
                   setIsDropdownOpen(false);
                 }}
                 className="w-full px-4 py-2.5 text-left text-sm text-panda-900 hover:bg-panda-100"
@@ -251,7 +216,12 @@ export default function ArticlesPage() {
 
       {/* 자유게시판 리스트 목록 메인 바디 */}
       <div className="flex flex-col divide-y divide-panda-200">
-        {paginatedArticles.length > 0 ? (
+        {error ? (
+          <div className="w-full py-20 text-center text-red-500 font-medium">
+            서버와 연결할 수 없습니다. <br />
+            <span className="text-sm text-panda-400 mt-2 block">{error}</span>
+          </div>
+        ) : paginatedArticles.length > 0 ? (
           paginatedArticles.map((article) => (
             <Link
               href={`/articles/${article.id}`}
@@ -282,7 +252,7 @@ export default function ArticlesPage() {
                   alt="제품 이미지"
                   width={72}
                   height={72}
-                  className="rounded-xl object-cover shrink-0 bg-panda-100"
+                  className="rounded-xl object-cover shrink-0 bg-panda-100 w-auto h-auto"
                 />
                 <div className="flex items-center gap-1.5 text-sm font-medium text-panda-600">
                   <Image src={icHeart} alt="좋아요" width={16} height={16} />

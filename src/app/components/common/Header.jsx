@@ -5,7 +5,6 @@ import logo from "@/app/assets/images/logo/logo.svg";
 export default function Header() {
   return (
     <header className="w-full border-b border-[#E5E7EB] bg-white">
-      {/* 데스크톱 1200px 고정 및 중앙 정렬 */}
       <div className="mx-auto flex h-16 w-[1200px] items-center justify-between">
         <div className="flex items-center gap-10">
           <Link href="/">
@@ -14,6 +13,7 @@ export default function Header() {
               alt="판다마켓 로고"
               width={110}
               height={32}
+              className="w-auto h-auto"
               priority
             />
           </Link>

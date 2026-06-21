@@ -35,6 +35,11 @@ const getTimeAgo = (dateString) => {
   return "방금 전";
 };
 
+const getListFromResponse = (data) => {
+  if (Array.isArray(data)) return data;
+  return data?.list || data?.comments || data?.data || [];
+};
+
 export default function ArticleDetailPage() {
   const { id } = useParams();
   const router = useRouter();
@@ -48,33 +53,39 @@ export default function ArticleDetailPage() {
   const [isArticleMenuOpen, setIsArticleMenuOpen] = useState(false);
   const [activeCommentMenuId, setActiveCommentMenuId] = useState(null);
 
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const [editCommentContent, setEditCommentContent] = useState("");
+
   const isCommentValid = newComment.trim().length > 0;
 
   // GET 데이터 가져오기
   useEffect(() => {
     const fetchArticleDetail = async () => {
       try {
-        const response = await fetch(`https://your-api-url.com/articles/${id}`);
-        if (response.ok) {
-          const data = await response.json();
-          setArticle(data);
+        const articleResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/articles/${id}`,
+        );
+
+        if (articleResponse.ok) {
+          const articleData = await articleResponse.json();
+          setArticle(articleData);
+
+          const commentsResponse = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/articles/${id}/comments`,
+          );
+
+          if (commentsResponse.ok) {
+            const commentsData = await commentsResponse.json();
+            setComments(getListFromResponse(commentsData));
+          } else {
+            setComments(getListFromResponse(articleData.comments));
+          }
         } else {
           throw new Error("API 연동 전");
         }
       } catch (error) {
-        setArticle({
-          id,
-          title: "판다마켓 너무 편리하고 좋아요. 자주 이용할게요.",
-          content:
-            "이번에 판다마켓에서 처음으로 중고 거래를 해봤는데, 앱도 너무 깔끔하고 거래 과정도 매끄러워서 정말 좋았습니다!\n\n앞으로도 안 쓰는 물건이 생기면 자주 이용할 거 같아요. 판다마켓 화이팅! 🐼💙",
-          createdAt: "2024-06-16T10:00:00Z",
-          likeCount: 102,
-          nickname: "총명한판다",
-        });
-
-        setComments([
-          // { id: 1, nickname: "코드잇학생", content: "저도 완전 공감합니다! UI가 진짜 예뻐요.", createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() }
-        ]);
+        console.error("게시글 조회 실패:", error);
+        setComments([]);
       } finally {
         setIsLoading(false);
       }
@@ -88,18 +99,20 @@ export default function ArticleDetailPage() {
     if (!confirm("정말로 이 게시글을 삭제하시겠습니까?")) return;
     setIsArticleMenuOpen(false);
     try {
-      const response = await fetch(`https://your-api-url.com/articles/${id}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/articles/${id}`,
+        {
+          method: "DELETE",
+        },
+      );
       if (response.ok) {
         alert("게시글이 삭제되었습니다.");
         router.push("/articles");
       } else {
-        alert("게시글이 삭제되었습니다! (API 연동 전 더미 동작)");
-        router.push("/articles");
+        alert("게시글 삭제에 실패했습니다.");
       }
     } catch (error) {
-      router.push("/articles");
+      alert("네트워크 에러가 발생했습니다.");
     }
   };
 
@@ -110,10 +123,80 @@ export default function ArticleDetailPage() {
     setActiveCommentMenuId(null);
   };
 
-  // 댓글 수정
+  // 댓글 수정 모드 활성화
   const handleEditComment = (commentId) => {
-    alert(`댓글 수정창을 활성화합니다. (댓글 ID: ${commentId})`);
+    const targetComment = comments.find((c) => c.id === commentId);
+    if (targetComment) {
+      setEditingCommentId(commentId);
+      setEditCommentContent(targetComment.content);
+    }
     setActiveCommentMenuId(null);
+  };
+
+  const handleUpdateComment = async (commentId) => {
+    if (!editCommentContent.trim()) return;
+
+    console.log(
+      "저장 시도 - 댓글 ID:",
+      commentId,
+      "수정할 내용:",
+      editCommentContent,
+    );
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/articles/${id}/comments/${commentId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ content: editCommentContent }),
+        },
+      );
+      if (response.ok) {
+        setComments((prevComments) =>
+          prevComments.map((c) =>
+            c.id === commentId ? { ...c, content: editCommentContent } : c,
+          ),
+        );
+        setEditingCommentId(null);
+        setEditCommentContent("");
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("댓글 수정 API 에러 응답:", response.status, errorData);
+        alert(`댓글 수정에 실패했습니다. (상태 코드: ${response.status})`);
+      }
+    } catch (error) {
+      console.error("댓글 수정 네트워크 에러:", error);
+      alert("네트워크 에러가 발생했습니다.");
+    }
+  };
+
+  // 댓글 등록 함수
+  const handleAddComment = async () => {
+    if (!isCommentValid) return;
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/articles/${id}/comments`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ content: newComment }),
+        },
+      );
+      if (response.ok) {
+        const createdComment = await response.json();
+        setComments([createdComment, ...comments]);
+        setNewComment("");
+      } else {
+        alert("댓글 등록에 실패했습니다.");
+      }
+    } catch (error) {
+      alert("네트워크 에러가 발생했습니다.");
+    }
   };
 
   if (isLoading) {
@@ -205,6 +288,7 @@ export default function ArticleDetailPage() {
             />
             <button
               disabled={!isCommentValid}
+              onClick={handleAddComment}
               className={`px-8 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
                 isCommentValid
                   ? "bg-brand-blue text-white hover:bg-brand-hover shadow-md shadow-brand-blue/20"
@@ -223,9 +307,34 @@ export default function ArticleDetailPage() {
                   key={comment.id}
                   className="flex flex-col gap-4 px-6 py-5 border-b border-panda-200 relative"
                 >
-                  <p className="text-panda-900 text-base pr-8 whitespace-pre-wrap leading-relaxed">
-                    {comment.content}
-                  </p>
+                  {editingCommentId === comment.id ? (
+                    <div className="flex flex-col gap-3 w-full pr-8">
+                      <textarea
+                        value={editCommentContent}
+                        onChange={(e) => setEditCommentContent(e.target.value)}
+                        className="w-full min-h-[80px] bg-white border border-brand-blue rounded-xl px-4 py-3 text-panda-900 focus:outline-none resize-none text-sm transition-all"
+                      />
+                      <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() => setEditingCommentId(null)}
+                          className="px-4 py-1.5 rounded-lg text-sm font-medium text-panda-600 bg-panda-100 hover:bg-panda-200 transition-colors"
+                        >
+                          취소
+                        </button>
+                        <button
+                          onClick={() => handleUpdateComment(comment.id)}
+                          disabled={!editCommentContent.trim()}
+                          className="px-4 py-1.5 rounded-lg text-sm font-medium text-white bg-brand-blue hover:bg-brand-hover transition-colors disabled:opacity-50"
+                        >
+                          저장
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-panda-900 text-base pr-8 whitespace-pre-wrap leading-relaxed">
+                      {comment.content}
+                    </p>
+                  )}
 
                   <div className="flex items-center gap-3">
                     <Image
@@ -244,33 +353,38 @@ export default function ArticleDetailPage() {
                     </div>
                   </div>
 
-                  <button
-                    onClick={() =>
-                      setActiveCommentMenuId(
-                        activeCommentMenuId === comment.id ? null : comment.id,
-                      )
-                    }
-                    className="absolute right-6 top-5 w-7 h-7 flex items-center justify-center rounded-full hover:bg-panda-100 text-panda-400 font-bold transition-colors"
-                  >
-                    ⋮
-                  </button>
-
-                  {activeCommentMenuId === comment.id && (
-                    <div className="absolute right-6 top-12 w-[120px] bg-white border border-panda-200 rounded-xl shadow-lg z-10 py-1 overflow-hidden">
-                      <button
-                        onClick={() => handleEditComment(comment.id)}
-                        className="w-full px-4 py-2.5 text-center text-sm text-panda-900 hover:bg-panda-100 transition-colors"
-                      >
-                        수정하기
-                      </button>
-                      <button
-                        onClick={() => handleDeleteComment(comment.id)}
-                        className="w-full px-4 py-2.5 text-center text-sm text-panda-900 hover:bg-panda-100 transition-colors"
-                      >
-                        삭제하기
-                      </button>
-                    </div>
+                  {editingCommentId !== comment.id && (
+                    <button
+                      onClick={() =>
+                        setActiveCommentMenuId(
+                          activeCommentMenuId === comment.id
+                            ? null
+                            : comment.id,
+                        )
+                      }
+                      className="absolute right-6 top-5 w-7 h-7 flex items-center justify-center rounded-full hover:bg-panda-100 text-panda-400 font-bold transition-colors"
+                    >
+                      ⋮
+                    </button>
                   )}
+
+                  {editingCommentId !== comment.id &&
+                    activeCommentMenuId === comment.id && (
+                      <div className="absolute right-6 top-12 w-[120px] bg-white border border-panda-200 rounded-xl shadow-lg z-10 py-1 overflow-hidden">
+                        <button
+                          onClick={() => handleEditComment(comment.id)}
+                          className="w-full px-4 py-2.5 text-center text-sm text-panda-900 hover:bg-panda-100 transition-colors"
+                        >
+                          수정하기
+                        </button>
+                        <button
+                          onClick={() => handleDeleteComment(comment.id)}
+                          className="w-full px-4 py-2.5 text-center text-sm text-panda-900 hover:bg-panda-100 transition-colors"
+                        >
+                          삭제하기
+                        </button>
+                      </div>
+                    )}
                 </div>
               ))
             ) : (

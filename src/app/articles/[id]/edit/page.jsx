@@ -29,7 +29,9 @@ export default function ArticleEditPage() {
   useEffect(() => {
     const fetchOriginalArticle = async () => {
       try {
-        const response = await fetch(`https://your-api-url.com/articles/${id}`);
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/articles/${id}`,
+        );
 
         if (response.ok) {
           const data = await response.json();
@@ -41,14 +43,7 @@ export default function ArticleEditPage() {
           throw new Error("API 연동 전");
         }
       } catch (error) {
-        // 확인용 더미 데이터
-        const dummyTitle = "판다마켓 너무 편리하고 좋아요. 자주 이용할게요.";
-        const dummyContent =
-          "이번에 판다마켓에서 처음으로 중고 거래를 해봤는데, 앱도 너무 깔끔하고 거래 과정도 매끄러워서 정말 좋았습니다!\n\n앞으로도 안 쓰는 물건이 생기면 자주 이용할 거 같아요. 판다마켓 화이팅! 🐼💙";
-
-        setOriginalArticleData({ title: dummyTitle, content: dummyContent });
-        setTitle(dummyTitle);
-        setContent(dummyContent);
+        console.error("게시글 조회 실패:", error);
       } finally {
         setIsLoading(false);
       }
@@ -63,27 +58,28 @@ export default function ArticleEditPage() {
     if (!isFormValid) return;
 
     try {
-      const response = await fetch(`https://your-api-url.com/articles/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/articles/${id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            title,
+            content,
+          }),
         },
-        body: JSON.stringify({
-          title,
-          content,
-        }),
-      });
+      );
 
       if (response.ok) {
         alert("성공적으로 수정되었습니다!");
         router.push(`/articles/${id}`);
       } else {
-        alert("성공적으로 수정되었습니다! (더미 동작 적용)");
-        router.push(`/articles/${id}`);
+        alert("게시글 수정에 실패했습니다.");
       }
     } catch (error) {
-      alert("성공적으로 수정되었습니다! (더미 동작)");
-      router.push(`/articles/${id}`);
+      alert("네트워크 에러가 발생했습니다.");
     }
   };
 

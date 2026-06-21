@@ -9,7 +9,6 @@ import icInstagram from "@/app/assets/images/social/instagram-logo.svg";
 export default function Footer() {
   return (
     <footer className="w-full bg-[#111827] py-8 text-[#9CA3AF]">
-      {/* 데스크톱 기준 가로 1200px 고정 및 중앙 정렬 */}
       <div className="mx-auto flex w-[1200px] items-center justify-between">
         <div className="text-sm">©codeit - 2024</div>
 
