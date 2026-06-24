@@ -18,8 +18,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "판다마켓 자유게시판",
-  description: "미션7 프로젝트",
+  title: "판다마켓",
+  description: "판다마켓 중고거래 서비스",
 };
 
 export default function RootLayout({ children }) {
@@ -32,7 +32,9 @@ export default function RootLayout({ children }) {
         <Providers>
           <Header />
 
-          <main className="mx-auto w-[1200px] flex-1 py-10">{children}</main>
+          <main className="mx-auto w-full max-w-[1200px] flex-1 px-4 py-8 md:px-6 md:py-10 xl:px-0">
+            {children}
+          </main>
 
           <Footer />
         </Providers>
