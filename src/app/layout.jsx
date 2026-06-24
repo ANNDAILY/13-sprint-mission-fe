@@ -3,6 +3,7 @@ import "./globals.css";
 
 import Header from "@/app/components/common/Header";
 import Footer from "@/app/components/common/Footer";
+import Providers from "@/app/providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,11 +29,13 @@ export default function RootLayout({ children }) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-[#F9FAFB] text-[#111827]">
-        <Header />
+        <Providers>
+          <Header />
 
-        <main className="mx-auto w-[1200px] flex-1 py-10">{children}</main>
+          <main className="mx-auto w-[1200px] flex-1 py-10">{children}</main>
 
-        <Footer />
+          <Footer />
+        </Providers>
       </body>
     </html>
   );
