@@ -22,19 +22,26 @@ const getErrorMessage = (error) => {
     return serverMessage;
   }
 
-  return "로그인에 실패했습니다. 이메일과 비밀번호를 확인해 주세요.";
+  return "회원가입에 실패했습니다. 입력한 정보를 다시 확인해 주세요.";
 };
 
-export default function SignInPage() {
+export default function SignUpPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
+  const [nickname, setNickname] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordConfirmation, setPasswordConfirmation] = useState("");
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isPasswordConfirmationVisible, setIsPasswordConfirmationVisible] =
+    useState(false);
   const [touched, setTouched] = useState({
     email: false,
+    nickname: false,
     password: false,
+    passwordConfirmation: false,
   });
   const [formError, setFormError] = useState("");
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -49,20 +56,38 @@ export default function SignInPage() {
         email.length > 0 && !EMAIL_REGEX.test(email)
           ? "잘못된 이메일입니다"
           : "",
+      nickname:
+        nickname.length > 0 && nickname.trim().length < 2
+          ? "닉네임은 2자 이상 입력해 주세요."
+          : "",
       password:
         password.length > 0 && password.length < 8
           ? "비밀번호는 8자 이상 입력해 주세요."
           : "",
+      passwordConfirmation:
+        passwordConfirmation.length > 0 && password !== passwordConfirmation
+          ? "비밀번호가 일치하지 않습니다."
+          : "",
     };
-  }, [email, password]);
+  }, [email, nickname, password, passwordConfirmation]);
 
-  const isFormValid = email.length > 0 && password.length >= 8 && !errors.email;
+  const isFormValid =
+    email.length > 0 &&
+    nickname.trim().length >= 2 &&
+    password.length >= 8 &&
+    passwordConfirmation.length >= 8 &&
+    !errors.email &&
+    !errors.nickname &&
+    !errors.password &&
+    !errors.passwordConfirmation;
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setTouched({
       email: true,
+      nickname: true,
       password: true,
+      passwordConfirmation: true,
     });
     setFormError("");
 
@@ -72,14 +97,16 @@ export default function SignInPage() {
 
     try {
       setIsSubmitting(true);
-      const response = await api.post("/auth/signIn", {
+      const response = await api.post("/auth/signUp", {
         email,
+        nickname: nickname.trim(),
         password,
+        passwordConfirmation,
       });
 
       localStorage.setItem("accessToken", response.data.accessToken);
       window.dispatchEvent(new Event("auth-change"));
-      router.replace("/items");
+      setIsSuccessModalOpen(true);
     } catch (error) {
       setFormError(getErrorMessage(error));
     } finally {
@@ -89,6 +116,11 @@ export default function SignInPage() {
 
   const handleCloseError = () => {
     setFormError("");
+  };
+
+  const handleCloseSuccess = () => {
+    setIsSuccessModalOpen(false);
+    router.replace("/items");
   };
 
   return (
@@ -126,11 +158,47 @@ export default function SignInPage() {
               placeholder="이메일을 입력해 주세요"
               className="h-14 rounded-xl bg-[#F3F4F6] px-6 text-base text-[#111827] outline-none ring-1 ring-transparent transition focus:ring-[#3692FF]"
               aria-invalid={touched.email && Boolean(errors.email)}
-              aria-describedby="email-error"
+              aria-describedby="signup-email-error"
             />
             {touched.email && errors.email && (
-              <p id="email-error" className="text-sm font-medium text-red-500">
+              <p
+                id="signup-email-error"
+                className="text-sm font-medium text-red-500"
+              >
                 {errors.email}
+              </p>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <label
+              htmlFor="nickname"
+              className="text-lg font-bold text-[#1F2937]"
+            >
+              닉네임
+            </label>
+            <input
+              id="nickname"
+              type="text"
+              value={nickname}
+              onChange={(event) => setNickname(event.target.value)}
+              onBlur={() =>
+                setTouched((prevTouched) => ({
+                  ...prevTouched,
+                  nickname: true,
+                }))
+              }
+              placeholder="닉네임을 입력해 주세요"
+              className="h-14 rounded-xl bg-[#F3F4F6] px-6 text-base text-[#111827] outline-none ring-1 ring-transparent transition focus:ring-[#3692FF]"
+              aria-invalid={touched.nickname && Boolean(errors.nickname)}
+              aria-describedby="signup-nickname-error"
+            />
+            {touched.nickname && errors.nickname && (
+              <p
+                id="signup-nickname-error"
+                className="text-sm font-medium text-red-500"
+              >
+                {errors.nickname}
               </p>
             )}
           </div>
@@ -157,7 +225,7 @@ export default function SignInPage() {
                 placeholder="비밀번호를 입력해 주세요"
                 className="h-14 w-full rounded-xl bg-[#F3F4F6] px-6 pr-14 text-base text-[#111827] outline-none ring-1 ring-transparent transition focus:ring-[#3692FF]"
                 aria-invalid={touched.password && Boolean(errors.password)}
-                aria-describedby="password-error"
+                aria-describedby="signup-password-error"
               />
               <button
                 type="button"
@@ -181,10 +249,74 @@ export default function SignInPage() {
             </div>
             {touched.password && errors.password && (
               <p
-                id="password-error"
+                id="signup-password-error"
                 className="text-sm font-medium text-red-500"
               >
                 {errors.password}
+              </p>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <label
+              htmlFor="passwordConfirmation"
+              className="text-lg font-bold text-[#1F2937]"
+            >
+              비밀번호 확인
+            </label>
+            <div className="relative">
+              <input
+                id="passwordConfirmation"
+                type={isPasswordConfirmationVisible ? "text" : "password"}
+                value={passwordConfirmation}
+                onChange={(event) =>
+                  setPasswordConfirmation(event.target.value)
+                }
+                onBlur={() =>
+                  setTouched((prevTouched) => ({
+                    ...prevTouched,
+                    passwordConfirmation: true,
+                  }))
+                }
+                placeholder="비밀번호를 다시 한 번 입력해 주세요"
+                className="h-14 w-full rounded-xl bg-[#F3F4F6] px-6 pr-14 text-base text-[#111827] outline-none ring-1 ring-transparent transition focus:ring-[#3692FF]"
+                aria-invalid={
+                  touched.passwordConfirmation &&
+                  Boolean(errors.passwordConfirmation)
+                }
+                aria-describedby="signup-password-confirmation-error"
+              />
+              <button
+                type="button"
+                onClick={() =>
+                  setIsPasswordConfirmationVisible(
+                    (prevIsPasswordConfirmationVisible) =>
+                      !prevIsPasswordConfirmationVisible,
+                  )
+                }
+                className="absolute right-5 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center"
+                aria-label={
+                  isPasswordConfirmationVisible
+                    ? "비밀번호 확인 숨기기"
+                    : "비밀번호 확인 보기"
+                }
+              >
+                <Image
+                  src={
+                    isPasswordConfirmationVisible ? eyeVisible : eyeInvisible
+                  }
+                  alt=""
+                  width={24}
+                  height={24}
+                />
+              </button>
+            </div>
+            {touched.passwordConfirmation && errors.passwordConfirmation && (
+              <p
+                id="signup-password-confirmation-error"
+                className="text-sm font-medium text-red-500"
+              >
+                {errors.passwordConfirmation}
               </p>
             )}
           </div>
@@ -194,7 +326,7 @@ export default function SignInPage() {
             disabled={isSubmitting}
             className="mt-2 h-14 rounded-full bg-[#3692FF] text-lg font-semibold text-white transition-colors hover:bg-[#1967D6] disabled:cursor-not-allowed disabled:bg-[#9CA3AF]"
           >
-            {isSubmitting ? "로그인 중..." : "로그인"}
+            {isSubmitting ? "회원가입 중..." : "회원가입"}
           </button>
         </form>
 
@@ -233,22 +365,31 @@ export default function SignInPage() {
         </div>
 
         <p className="mt-6 text-center text-base text-[#1F2937]">
-          판다마켓이 처음이신가요?{" "}
+          이미 회원이신가요?{" "}
           <Link
-            href="/signup"
+            href="/signin"
             className="font-semibold text-[#3692FF] underline underline-offset-2"
           >
-            회원가입
+            로그인
           </Link>
         </p>
       </section>
 
       <Modal
         open={Boolean(formError)}
-        title="로그인 실패"
+        title="회원가입 실패"
         message={formError}
         onClose={handleCloseError}
-        labelledBy="signin-error-title"
+        labelledBy="signup-error-title"
+      />
+
+      <Modal
+        open={isSuccessModalOpen}
+        title="회원가입 완료"
+        message="가입 완료되었습니다."
+        onClose={handleCloseSuccess}
+        labelledBy="signup-success-title"
+        hideTitle
       />
     </div>
   );

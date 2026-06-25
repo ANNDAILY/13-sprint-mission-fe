@@ -24,11 +24,16 @@ const subscribeAuth = (callback) => {
 
 export default function Header() {
   const pathname = usePathname();
+  const isAuthPage = pathname === "/signin" || pathname === "/signup";
   const hasAccessToken = useSyncExternalStore(
     subscribeAuth,
     getAuthSnapshot,
     () => false,
   );
+
+  if (isAuthPage) {
+    return null;
+  }
 
   const isArticlesPath = pathname.startsWith("/articles");
   const isItemsPath = pathname.startsWith("/items");
