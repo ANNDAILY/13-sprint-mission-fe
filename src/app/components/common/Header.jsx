@@ -6,28 +6,14 @@ import { useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 import logo from "@/app/assets/images/logo/logo.svg";
 import icProfile from "@/app/assets/images/icons/ic_profile.svg";
-
-const getAuthSnapshot = () => {
-  if (typeof window === "undefined") return false;
-  return Boolean(localStorage.getItem("accessToken"));
-};
-
-const subscribeAuth = (callback) => {
-  window.addEventListener("storage", callback);
-  window.addEventListener("auth-change", callback);
-
-  return () => {
-    window.removeEventListener("storage", callback);
-    window.removeEventListener("auth-change", callback);
-  };
-};
+import { hasAccessToken, subscribeAuthChange } from "@/app/lib/auth";
 
 export default function Header() {
   const pathname = usePathname();
   const isAuthPage = pathname === "/signin" || pathname === "/signup";
-  const hasAccessToken = useSyncExternalStore(
-    subscribeAuth,
-    getAuthSnapshot,
+  const isLoggedIn = useSyncExternalStore(
+    subscribeAuthChange,
+    hasAccessToken,
     () => false,
   );
 
@@ -74,7 +60,7 @@ export default function Header() {
         </div>
 
         <div>
-          {hasAccessToken ? (
+          {isLoggedIn ? (
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F3F4F6]">
               <Image src={icProfile} alt="프로필" width={24} height={24} />
             </div>

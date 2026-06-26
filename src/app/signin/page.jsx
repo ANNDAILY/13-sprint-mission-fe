@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import { api } from "@/app/lib/api";
+import { hasAccessToken, setAccessToken } from "@/app/lib/auth";
 import Modal from "@/app/components/common/Modal";
 import logo from "@/app/assets/images/logo/logo.svg";
 import eyeVisible from "@/app/assets/images/icons/eye-visible.svg";
@@ -38,7 +39,7 @@ export default function SignInPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (localStorage.getItem("accessToken")) {
+    if (hasAccessToken()) {
       router.replace("/items");
     }
   }, [router]);
@@ -77,8 +78,7 @@ export default function SignInPage() {
         password,
       });
 
-      localStorage.setItem("accessToken", response.data.accessToken);
-      window.dispatchEvent(new Event("auth-change"));
+      setAccessToken(response.data.accessToken);
       router.replace("/items");
     } catch (error) {
       setFormError(getErrorMessage(error));
