@@ -30,29 +30,29 @@ export default function Header() {
 
   return (
     <header className="w-full border-b border-[#E5E7EB] bg-white">
-      <div className="mx-auto flex h-16 w-full max-w-[1200px] items-center justify-between px-4 md:px-6 xl:px-0">
-        <div className="flex items-center gap-6 md:gap-10">
-          <Link href="/">
+      <div className="mx-auto flex h-16 w-full max-w-[1200px] items-center justify-between gap-3 px-4 md:px-6 xl:px-0">
+        <div className="flex min-w-0 items-center gap-4 md:gap-10">
+          <Link href="/" className="shrink-0">
             <Image
               src={logo}
               alt="판다마켓 로고"
               width={110}
               height={32}
-              className="w-auto h-auto"
+              className="h-auto w-[104px] md:w-[110px]"
               priority
             />
           </Link>
 
-          <nav className="flex items-center gap-4 text-sm font-semibold md:gap-8 md:text-base">
+          <nav className="flex min-w-0 items-center gap-3 text-sm font-semibold md:gap-8 md:text-base">
             <Link
               href="/articles"
-              className={isArticlesPath ? activeLinkClass : inactiveLinkClass}
+              className={`whitespace-nowrap ${isArticlesPath ? activeLinkClass : inactiveLinkClass}`}
             >
               자유게시판
             </Link>
             <Link
               href="/items"
-              className={isItemsPath ? activeLinkClass : inactiveLinkClass}
+              className={`whitespace-nowrap ${isItemsPath ? activeLinkClass : inactiveLinkClass}`}
             >
               중고마켓
             </Link>

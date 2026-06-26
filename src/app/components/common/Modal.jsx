@@ -5,8 +5,13 @@ export default function Modal({
   title,
   message,
   onClose,
+  onConfirm,
   labelledBy = "modal-title",
   hideTitle = false,
+  confirmText = "확인",
+  cancelText = "취소",
+  showCancel = false,
+  isConfirmDisabled = false,
 }) {
   if (!open) {
     return null;
@@ -37,13 +42,25 @@ export default function Modal({
         >
           {message}
         </p>
-        <button
-          type="button"
-          onClick={onClose}
-          className="mt-6 h-12 w-full max-w-[120px] rounded-lg bg-[#3692FF] text-base font-semibold text-white transition-colors hover:bg-[#1967D6]"
-        >
-          확인
-        </button>
+        <div className="mt-6 flex w-full justify-center gap-3">
+          {showCancel && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="h-12 w-full max-w-[120px] rounded-lg bg-panda-200 text-base font-semibold text-panda-600 transition-colors hover:bg-panda-300"
+            >
+              {cancelText}
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={onConfirm || onClose}
+            disabled={isConfirmDisabled}
+            className="h-12 w-full max-w-[120px] rounded-lg bg-[#3692FF] text-base font-semibold text-white transition-colors hover:bg-[#1967D6] disabled:cursor-not-allowed disabled:bg-panda-300"
+          >
+            {confirmText}
+          </button>
+        </div>
       </div>
     </div>
   );

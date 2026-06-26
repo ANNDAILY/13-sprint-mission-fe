@@ -194,8 +194,10 @@ export default function ItemsPage() {
 
   return (
     <div className="w-full pb-20">
-      <section className="mb-10">
-        <h2 className="mb-4 text-xl font-bold text-panda-900">베스트 상품</h2>
+      <section className="mb-12">
+        <h2 className="mb-4 text-lg font-bold text-panda-900 md:text-xl">
+          베스트 상품
+        </h2>
 
         {bestProductsQuery.isLoading ? (
           <ProductGridSkeleton count={BEST_PRODUCTS_SIZE} />
@@ -204,7 +206,7 @@ export default function ItemsPage() {
             베스트 상품을 불러오지 못했습니다.
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
             {bestProducts.map((product) => (
               <ProductCard key={`best-product-${product.id}`} product={product} />
             ))}
@@ -213,11 +215,21 @@ export default function ItemsPage() {
       </section>
 
       <section>
-        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <h2 className="text-xl font-bold text-panda-900">판매 중인 상품</h2>
+        <div className="mb-6 flex flex-col gap-4">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-lg font-bold text-panda-900 md:text-xl">
+              판매 중인 상품
+            </h2>
+            <Link
+              href="/items/write"
+              className="flex h-11 shrink-0 items-center justify-center rounded-lg bg-brand-blue px-4 text-sm font-semibold text-white transition-colors hover:bg-brand-hover md:px-5"
+            >
+              상품 등록하기
+            </Link>
+          </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="relative min-w-0 sm:w-[325px]">
+          <div className="flex items-center gap-3">
+            <div className="relative min-w-0 flex-1 md:max-w-[325px]">
               <Image
                 src={icSearch}
                 alt="검색"
@@ -234,18 +246,11 @@ export default function ItemsPage() {
               />
             </div>
 
-            <Link
-              href="/items/write"
-              className="flex h-11 items-center justify-center rounded-lg bg-brand-blue px-5 text-sm font-semibold text-white transition-colors hover:bg-brand-hover"
-            >
-              상품 등록하기
-            </Link>
-
             <div className="relative">
               <button
                 type="button"
                 onClick={() => setIsSortOpen((prevIsSortOpen) => !prevIsSortOpen)}
-                className="flex h-11 w-full items-center justify-between gap-3 rounded-xl border border-panda-200 bg-white px-4 text-sm font-medium text-panda-900 transition-colors hover:bg-panda-50 sm:w-[130px]"
+                className="flex h-11 w-[112px] items-center justify-between gap-2 rounded-xl border border-panda-200 bg-white px-3 text-sm font-medium text-panda-900 transition-colors hover:bg-panda-50 md:w-[130px] md:px-4"
                 aria-expanded={isSortOpen}
               >
                 <span>{selectedSortLabel}</span>
@@ -259,7 +264,7 @@ export default function ItemsPage() {
               </button>
 
               {isSortOpen && (
-                <div className="absolute right-0 z-10 mt-2 w-full overflow-hidden rounded-xl border border-panda-200 bg-white shadow-lg sm:w-[130px]">
+                <div className="absolute right-0 z-10 mt-2 w-[112px] overflow-hidden rounded-xl border border-panda-200 bg-white shadow-lg md:w-[130px]">
                   {sortOptions.map((option) => (
                     <button
                       key={option.value}
